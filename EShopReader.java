@@ -22,7 +22,7 @@ public class EShopReader {
     public static void main(String[] args) throws IOException, CsvException { 
         String line = "";
         String splitBy = ";";
-        FileWriter model_file = new FileWriter("model.csv");
+        FileWriter model_file = new FileWriter("src/data/transaction.csv");
         CSVWriter writer = new CSVWriter(model_file);
         try   
             {  
