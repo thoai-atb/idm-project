@@ -27,7 +27,7 @@ public class EShopReader {
         try   
             {  
             //parsing a CSV file into BufferedReader class constructor  
-                BufferedReader br = new BufferedReader(new FileReader("eshop.csv"));
+                BufferedReader br = new BufferedReader(new FileReader("src/data/eshop.csv"));
                 
                 String[][] collect = new String[165475][2];
                 String[] model;
@@ -54,7 +54,7 @@ public class EShopReader {
                         k[count] += ','+collect[i][1];
                     }else {
                         k[count+1] = collect[i][1];
-                        System.out.println(k[count]);
+                        //System.out.println(k[count]);
                         count+=1;
                     }   
                 }
