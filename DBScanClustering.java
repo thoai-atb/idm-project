@@ -8,15 +8,19 @@ import weka.core.EuclideanDistance;
 public class DBScanClustering {
 	private Instances instances;
 	private int numberOfCluster;
+	private double epsilon = 0.9;
+	private int minPoints = 5;
 	protected DBSCAN dbscan = new DBSCAN();
 	
-	public DBScanClustering(Instances instances) {
+	public DBScanClustering(Instances instances, double epsilon, int minPoints) {
 		this.instances = instances;
+		this.epsilon = epsilon;
+		this.minPoints = minPoints;
 	}
 	
 	public void processing() throws Exception {
-		this.dbscan.setEpsilon(0.8);
-		this.dbscan.setMinPoints(5);
+		this.dbscan.setEpsilon(this.epsilon);
+		this.dbscan.setMinPoints(this.minPoints);
 		this.dbscan.setDistanceFunction(new EuclideanDistance());
 		this.dbscan.buildClusterer(this.instances);
 		this.numberOfCluster = dbscan.numberOfClusters();
