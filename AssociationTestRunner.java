@@ -36,14 +36,22 @@ public class AssociationTestRunner {
 		
 		// Apply FPGrowth Model
 		AssociationManager assMan = new AssociationManager(trainData);
-		int correctlyClassified = 0;
+		ValidationResult validationResult = new ValidationResult();
 		for(int i = 0; i<testData.numInstances(); i++) {
 			Instance ins = testData.instance(i);
-			if(assMan.test(ins))
-				correctlyClassified ++;
+			String result = assMan.test(ins);
+			validationResult.read(result);	
 		}
 		
-		double ratio = correctlyClassified * 1.0 / testData.numInstances();
-		System.out.println("Test result: " + correctlyClassified + "/" + testData.numInstances() + " ratio: " + ratio);
+		int correct = validationResult.correctlyClassified;
+		int total = validationResult.totalInstances;
+		double accuracy = validationResult.getAccuracy();
+		double precision = validationResult.getPrecision();
+		double recall = validationResult.getRecall();
+		
+		System.out.println();
+		System.out.println("Test result: " + correct + "/" + total + " ratio: " + accuracy);
+		System.out.println("Precision: " + precision);
+		System.out.println("Recall: " + recall);
 	}
 }

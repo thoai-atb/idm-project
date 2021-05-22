@@ -28,7 +28,7 @@ public class AssociationManager {
 		this.defaultValue = defaultValue;
 	}
 	
-	public boolean test(Instance target) throws Exception {
+	public String test(Instance target) throws Exception {
 		// create random generator
 		Random rand = new Random();
 		int randomIdx = rand.nextInt(target.numAttributes());
@@ -70,17 +70,19 @@ public class AssociationManager {
 				break;
 		}
 		
-		boolean result = prediction.equals(valueAtMissing);
+		String trueFalse = prediction.equals(valueAtMissing) ? "t" : "f";
+		String posNeg = prediction.equals(defaultValue) ? "n" : "p";
+		boolean correct = prediction.equals(valueAtMissing);
 	
 		if(log) {
 			System.out.println(target);
 			System.out.println(randomIdx + " " + valueAtMissing);
 			System.out.println("predicted: " + prediction);
-			System.out.println("correct: " + result);
+			System.out.println("correct: " + correct);
 			System.out.println();
 		}
 		
-		return result;
+		return trueFalse + posNeg;
 	}
 	
 	public void printRules() {
