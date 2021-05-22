@@ -11,15 +11,10 @@ public class CrossValidation {
 	public static void main(String[] args) throws Exception {
 		DataSource source = new DataSource("src/data/transaction.arff");
 		Instances dataset1 = source.getDataSet();
-		
-		//set class index to the last attribute
-//		dataset.setClassIndex(dataset.numAttributes()-1);
-		
-		
 		int seed = 1;
 		int folds = 10;
-		int count1 = 0;
-		int count2 = 0;
+		double avgAcc1 = 0;
+		double avgAcc2 = 0;
 		
 		RemovePercentage filter = new RemovePercentage();
 		filter.setInputFormat(dataset1);
@@ -36,30 +31,26 @@ public class CrossValidation {
 		
 		// perform cross-validation	    	    
 		for (int n = 0; n < folds; n++) {
+			int count1 = 0;
+			int count2 = 0;
+			
 			Instances train = randData.trainCV(folds, n);
 				  
 			// for the training, use the Clustering Class from Hoang to generate n clusters     
 			DBScanClustering trainingClusterings = new DBScanClustering(train, 0.9, 5);
-			
 			HashMap<Integer, Instances> trainMap = trainingClusterings.getClusteredInstances();
-//			AssociationManager[] TrainAssoManaArr = new AssociationManager[trainMap.size()];
 			HashMap<Integer, AssociationManager> clusterIDtoTrainAssoMana = new HashMap<Integer, AssociationManager>();
 			
 			// for each number of clusters do the association mining
-			int i = 0;
 			for (int clusterID : trainMap.keySet()) {
-				clusterIDtoTrainAssoMana.put(clusterID, new AssociationManager(trainMap.get(clusterID)));
+				AssociationManager assoc = new AssociationManager(trainMap.get(clusterID));
+				assoc.setDefault("FALSE");
+				clusterIDtoTrainAssoMana.put(clusterID, assoc);
 			}
 			
 			// repeat for whole data
-			i = 0;
-			DBScanClustering wholeDataClusterings = new DBScanClustering(train, 0.9, 5);
-			HashMap<Integer, Instances> wholeDataMap = wholeDataClusterings.getClusteredInstances();
-			HashMap<Integer, AssociationManager> clusterIDtoWholeAssoMana = new HashMap<Integer, AssociationManager>();
-			
-			for (int clusterID : wholeDataMap.keySet()) {
-				clusterIDtoWholeAssoMana.put(clusterID, new AssociationManager(wholeDataMap.get(clusterID)));
-			}
+			AssociationManager wholeDataAssoc = new AssociationManager(train);
+			wholeDataAssoc.setDefault("FALSE");
 			
 			Instances test = randData.testCV(folds, n);
 			for (int j=0; j<test.size(); j++) {
@@ -71,67 +62,32 @@ public class CrossValidation {
 				try {
 					clusterNum = trainingClusterings.getCluster(item);
 				} catch (Exception e) {
-					count1--;
-					count2--;
-					continue;
+					clusterNum = -1;
 				}
-				
 				
 				// use the association model of that cluster to test it
 				if (clusterIDtoTrainAssoMana.get(clusterNum).test(item)) count1++;
 				
 				// use the association model of the whole data to test
 				// without clustering
-				if (clusterIDtoWholeAssoMana.get(clusterNum).test(item)) count2++;
+				if (wholeDataAssoc.test(item)) count2++;
 			}
+			
+			double acc1 = count1 * 100.0 / test.size();
+			double acc2 = count1 * 100.0 / test.size();
+			System.out.println("Fold #" + (n + 1));
+			System.out.println("With clustering: " + count1 + "/" + test.size() + " (" + acc1 + " %)");
+			System.out.println("Without clustering: " + count2 + "/" + test.size() + " (" + acc2 + " %)");
+			System.out.println();
+			
+			avgAcc1 += acc1;
+			avgAcc2 += acc2;
 		}
-		System.out.println("Count1: " + count1);
-		System.out.println("Count2: " + count2);
+		avgAcc1 /= 10;
+		avgAcc2 /= 10;
+		System.out.println();
+		System.out.println("AVERAGE ACCURACY: ");
+		System.out.println("With clustering: " + avgAcc1 + " %");
+		System.out.println("Without clustering: " + avgAcc2 + " %");
 	}
 }
-			
-//		}
-		
-//		//create the classifier
-//		NaiveBayes nb = new NaiveBayes();
-//
-//		int seed = 1;
-//		int folds = 15;
-//		// randomize data
-//		Random rand = new Random(seed);
-//		//create random dataset
-//		Instances randData = new Instances(dataset);
-//		randData.randomize(rand);
-//		//stratify	    
-//		if (randData.classAttribute().isNominal())
-//			randData.stratify(folds);
-//
-//		// perform cross-validation	    	    
-//		for (int n = 0; n < folds; n++) {
-//			Evaluation eval = new Evaluation(randData);
-//			//get the folds	      
-//			Instances train = randData.trainCV(folds, n);
-//			Instances test = randData.testCV(folds, n);	      
-//			// build and evaluate classifier	     
-//			nb.buildClassifier(train);
-//			eval.evaluateModel(nb, test);
-//
-//			// output evaluation
-//			System.out.println();
-//			System.out.println(eval.toMatrixString("=== Confusion matrix for fold " + (n+1) + "/" + folds + " ===\n"));
-//			System.out.println("Correct % = "+eval.pctCorrect());
-//			System.out.println("Incorrect % = "+eval.pctIncorrect());
-//			System.out.println("AUC = "+eval.areaUnderROC(1));
-//			System.out.println("kappa = "+eval.kappa());
-//			System.out.println("MAE = "+eval.meanAbsoluteError());
-//			System.out.println("RMSE = "+eval.rootMeanSquaredError());
-//			System.out.println("RAE = "+eval.relativeAbsoluteError());
-//			System.out.println("RRSE = "+eval.rootRelativeSquaredError());
-//			System.out.println("Precision = "+eval.precision(1));
-//			System.out.println("Recall = "+eval.recall(1));
-//			System.out.println("fMeasure = "+eval.fMeasure(1));
-//			System.out.println("Error Rate = "+eval.errorRate());
-//			//the confusion matrix
-//			//System.out.println(eval.toMatrixString("=== Overall Confusion Matrix ===\n"));
-//		}
-
