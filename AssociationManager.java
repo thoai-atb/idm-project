@@ -14,14 +14,24 @@ public class AssociationManager {
 
 	public String falseString = "n";
 	public String trueString = "y";
+	public long buildTime;
 	private FPGrowth fpGrowth;
 	private List<AssociationRule> rules;
 	
 	public AssociationManager(Instances input) throws Exception {
 		fpGrowth = new FPGrowth();
+		
+		// SET OPTIONS
 		String[] options = "-P 1 -I -1 -N 1000 -T 0 -C 0.9 -D 0.05 -U 1.0 -M 0.005".split(" ");
 		fpGrowth.setOptions(options);
+		
+		// BUILD THE MODEL AND TIME
+		long startTime = System.currentTimeMillis();
 		fpGrowth.buildAssociations(input);
+		long endTime = System.currentTimeMillis();
+		buildTime = endTime - startTime;
+		
+		// GET THE RULES
 		rules = fpGrowth.getAssociationRules().getRules();
 		rules.sort(new Comparator<AssociationRule>() {
 			@Override

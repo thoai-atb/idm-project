@@ -47,6 +47,7 @@ public class AssociationTestRunner {
 		double accuracy = validationResult.getAccuracy();
 		
 		System.out.println();
+		System.out.println("Model was build in " + assMan.buildTime + " ms");
 		System.out.println("Test result: " + correct + "/" + total + " ratio: " + accuracy);
 	}
 }

@@ -8,6 +8,10 @@ import weka.filters.Filter;
 import weka.filters.unsupervised.instance.RemovePercentage;
 
 public class CrossValidation {
+	
+	public static long clusterTotalTime = 0;
+	public static long nonClusterTotalTime = 0;
+	
 	public static void main(String[] args) throws Exception {
 		DataSource source = new DataSource("src/data/transaction.arff");
 		Instances dataset1 = source.getDataSet();
@@ -18,7 +22,7 @@ public class CrossValidation {
 		
 		RemovePercentage filter = new RemovePercentage();
 		filter.setInputFormat(dataset1);
-		filter.setPercentage(90);
+		filter.setPercentage(0);
 		Instances dataset = Filter.useFilter(dataset1, filter);
 		
 		// randomize data
@@ -36,13 +40,17 @@ public class CrossValidation {
 		System.out.println();
 		System.out.println("AVERAGE: (Accuracy)");
 		System.out.println("With clustering: " + result1.getAccuracy());
+		System.out.println("Total time taken to build models: " + clusterTotalTime + " ms");
 		System.out.println("Without clustering: " + result2.getAccuracy());
+		System.out.println("Total time taken to build models: " + nonClusterTotalTime + " ms");
 	}
 	
 	public static ValidationResult[] validateFold(Instances randData, int folds, int n) throws Exception {
 		ValidationResult result1 = new ValidationResult();
 		ValidationResult result2 = new ValidationResult();
 		Instances train = randData.trainCV(folds, n);
+		long clusterTime = 0;
+		long nonClusterTime = 0;
 			  
 		// for the training, use the Clustering Class from Hoang to generate n clusters     
 		DBScanClustering trainingClusterings = new DBScanClustering(train, 0.9, 5);
@@ -53,12 +61,14 @@ public class CrossValidation {
 		for (int clusterID : trainMap.keySet()) {
 			AssociationManager assoc = new AssociationManager(trainMap.get(clusterID));
 			assoc.setDefault("TRUE", "FALSE");
+			clusterTime += assoc.buildTime;
 			clusterIDtoTrainAssoMana.put(clusterID, assoc);
 		}
 		
 		// repeat for whole data
 		AssociationManager wholeDataAssoc = new AssociationManager(train);
 		wholeDataAssoc.setDefault("TRUE", "FALSE");
+		nonClusterTime += wholeDataAssoc.buildTime;
 		
 		Instances test = randData.testCV(folds, n);
 		for (int j=0; j<test.size(); j++) {
@@ -83,9 +93,13 @@ public class CrossValidation {
 		double acc2 = result2.getAccuracy() * 100;
 		System.out.println("Fold #" + (n + 1));
 		System.out.println("With clustering: " + result1.correctCount + "/" + result1.total + " (" + acc1 + " %)");
+		System.out.println("Time taken to build model: " + clusterTime + " ms");
 		System.out.println("Without clustering: " + result2.correctCount + "/" + result2.total + " (" + acc2 + " %)");
+		System.out.println("Time taken to build model: " + nonClusterTime + " ms");
 		System.out.println();
 		
+		clusterTotalTime += clusterTime;
+		nonClusterTotalTime += nonClusterTime;
 		return new ValidationResult[] {result1, result2};
 	}
 }
