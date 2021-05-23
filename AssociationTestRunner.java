@@ -39,19 +39,14 @@ public class AssociationTestRunner {
 		ValidationResult validationResult = new ValidationResult();
 		for(int i = 0; i<testData.numInstances(); i++) {
 			Instance ins = testData.instance(i);
-			String result = assMan.test(ins);
-			validationResult.read(result);	
+			assMan.test(ins, validationResult);
 		}
 		
-		int correct = validationResult.correctlyClassified;
-		int total = validationResult.totalInstances;
+		int correct = validationResult.correctCount;
+		int total = validationResult.total;
 		double accuracy = validationResult.getAccuracy();
-		double precision = validationResult.getPrecision();
-		double recall = validationResult.getRecall();
 		
 		System.out.println();
 		System.out.println("Test result: " + correct + "/" + total + " ratio: " + accuracy);
-		System.out.println("Precision: " + precision);
-		System.out.println("Recall: " + recall);
 	}
 }
