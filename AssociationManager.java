@@ -63,11 +63,11 @@ public class AssociationManager {
 			// get the target item we want to predict
 			Attribute desireAttr = targetAttrList.get(i);
 			// test
-			test(inputs, desireAttr, validationResult);
+			testSequence(inputs, desireAttr, validationResult);
 		}
 	}
 	
-	public void test(List<Attribute> inputs, Attribute desireAttr, ValidationResult validationResult) {
+	public void testSequence(List<Attribute> inputs, Attribute desireAttr, ValidationResult validationResult) {
 		int maxPremiseCount = -1;
 		Attribute chosenAttribute = null;
 		
